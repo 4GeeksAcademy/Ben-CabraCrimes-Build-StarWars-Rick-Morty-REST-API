@@ -66,16 +66,15 @@ def create_person():
 
 # POST favourites people
 # use filter_by to find correct user in the favourites table!!
-@api.route("/favorites/people/<int:people_id>", methods=["POST"])
+@api.route("user/1/favorites/people/<int:people_id>", methods=["POST"])
 def add_people_favourites(people_id):
-    favourite = Favourites(
-        user_id=request.json["user_id"], people_id=request.json["people_id"]
-    )
+    # favourite = Favourites(
+    #     user_id=request.json["user_id"], people_id=request.json["people_id"]
+    # )
+    favourite = Favourites(people_id=people_id, user_id=1)
     db.session.add(favourite)
     db.session.commit()
-    return jsonify(
-        {"favourite": f"Person {people_id} added to favourites {favourite.user_id}"}
-    )
+    return jsonify({"favourite": f"Person {people_id} added to favourites {people_id}"})
 
 
 # CREATE/POST FAVOURITE LOCATION
@@ -113,37 +112,33 @@ def add_location_favourites(location_id):
 # use filter_by to find correct user in the favourites table!!
 @api.route("/user/1/favorites/location/", methods=["GET"])
 def get_all_favourite_locations():
-    location = Location.query.all()
+    location = Favourites.query.all()
     location_serialized = [location.serialize() for location in location]
     return jsonify({"Favourite location": location_serialized}), 200
 
 
-# GET ALL USER FAVOURIRES
+# GET ALL THE USERS FAVOURIRES
 # use filter_by to find correct user in the favourites table!!
-@api.route("/user/favourites", methods=["GET"])
+@api.route("/user/1/favourites", methods=["GET"])
 def get_user_favourites():
-    user_favourites = User.query.all()
+    user_favourites = Favourites.query.all()
     # use filter_by to find correct user in the favourites table!!
-    user_favourites_serialized = [
-        user_favourites.serialize() for fav in user_favourites
-    ]
+    user_favourites_serialized = [user.serialize() for user in user_favourites]
     if not user_favourites:
         return jsonify({"error": "No favourites found"}), 400
-    return jsonify({"favourite": user_favourites.serialize()}), 200
+    return jsonify({"favourite": user_favourites_serialized}), 200
 
 
-# GET ALL LOCATIONS IN FAVOURITE
+# GET USER FAVOURITE PEOPLE
 # use filter_by to find correct user in the favourites table!!
-@api.route("favorites/location", methods=["GET"])
+@api.route("/user/1/favorites/people", methods=["GET"])
 def get_location_favourites():
     location_favourites = Favourites.query.all()
     # use filter_by to find correct user
-    user_favourites_serialized = [
-        location_favourites.serialize() for fav in location_favourites
-    ]
+    user_favourites_serialized = [fav.serialize() for fav in location_favourites]
     if not location_favourites:
         return jsonify({"error": "No favourites found"}), 400
-    return jsonify({"favourite": location_favourites.serialize()}), 200
+    return jsonify({"favourite": user_favourites_serialized}), 200
 
 
 # GET ONE USER
@@ -165,9 +160,9 @@ def get_all_users():
 
 # DELETE FAVOURITE PEOPLE
 # use filter_by to find correct user in the favourites table!!
-@api.route("/favorites/people/<int:people_id>", methods=["DELETE"])
+@api.route("/user/1/favourites/people/<int:people_id>", methods=["DELETE"])
 def delete_one_people(people_id):
-    people = People.query.get(people_id)
+    people = Favourites.query.get(people_id)
     if not people:
         return jsonify({"error": "No people with this id found"}), 400
     db.session.delete(people)
@@ -177,9 +172,9 @@ def delete_one_people(people_id):
 
 # DELETE FAVOURITE LOCATION
 # use filter_by to find correct user in the favourites table!!
-@api.route("/favorites/location/<int:location_id>", methods=["DELETE"])
+@api.route("/user/1/favourites/location/<int:location_id>", methods=["DELETE"])
 def delete_one_location(location_id):
-    location = Location.query.get(location_id)
+    location = Favourites.query.get(location_id)
     if not location:
         return jsonify({"error": "No location with this id found"}), 400
     db.session.delete(location)
