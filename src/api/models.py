@@ -60,13 +60,13 @@ class Episode(db.Model):
 class Favourites(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    user = db.relationship(User)
+    user = db.relationship("User")
     people_id = db.Column(db.Integer, db.ForeignKey("people.id"))
-    people = db.relationship(People)
+    people = db.relationship("People")
     location_id = db.Column(db.Integer, db.ForeignKey("location.id"))
-    location = db.relationship(Location)
+    location = db.relationship("Location")
     episode_id = db.Column(db.Integer, db.ForeignKey("episode.id"))
-    episode = db.relationship(Episode)
+    episode = db.relationship("Episode")
 
     def serialize(self):
         return {
