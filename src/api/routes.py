@@ -65,7 +65,6 @@ def create_person():
 
 
 # POST favourites people
-# use filter_by to find correct user in the favourites table!!
 @api.route("<int:user_id>/favorites/people/<int:people_id>", methods=["POST"])
 def add_people_favourites(people_id):
     # favourite = Favourites(
@@ -78,7 +77,6 @@ def add_people_favourites(people_id):
 
 
 # CREATE/POST FAVOURITE LOCATION
-# use filter_by to find correct user in the favourites table!!
 @api.route("<int:user_id>/favorites/location/<int:location_id>", methods=["POST"])
 def add_location_favourites(location_id):
     # favourite = Favourites(
@@ -109,7 +107,6 @@ def add_location_favourites(location_id):
 
 
 # GET ALL USER FAVOURITE LOCATIONS
-# use filter_by to find correct user in the favourites table!!
 @api.route("/favorites/location", methods=["GET"])
 def get_all_favourite_locations():
     # location = Favourites.query.filter_by(location_id=1, user_id=1)
@@ -119,11 +116,9 @@ def get_all_favourite_locations():
 
 
 # GET ALL THE FAVOURIRES
-# use filter_by to find correct user in the favourites table!!
 @api.route("/favourites", methods=["GET"])
 def get_user_favourites():
     user_favourites = Favourites.query.all()
-    # use filter_by to find correct user in the favourites table!!
     user_favourites_serialized = [user.serialize() for user in user_favourites]
     if not user_favourites:
         return jsonify({"error": "No favourites found"}), 400
@@ -131,7 +126,6 @@ def get_user_favourites():
 
 
 # GET USER FAVOURITE PEOPLE
-# use filter_by to find correct user in the favourites table!!
 @api.route("/favorites/people", methods=["GET"])
 def get_location_favourites():
     location_favourites = Favourites.query.all()
@@ -159,8 +153,7 @@ def get_all_users():
     return jsonify({"people": user_serialized}), 200
 
 
-# DELETE FAVOURITE PEOPLE
-# use filter_by to find correct user in the favourites table!!
+# DELETE A FAVOURITE PEOPLE/PERSON
 @api.route("/favourites/people/<int:people_id>", methods=["DELETE"])
 def delete_one_people(people_id):
     people = Favourites.query.filter_by(people_id=people_id).first()
@@ -171,8 +164,7 @@ def delete_one_people(people_id):
     return jsonify({"person": "people deleted"}), 200
 
 
-# DELETE FAVOURITE LOCATION
-# use filter_by to find correct user in the favourites table!!
+# DELETE A FAVOURITE LOCATION
 @api.route("<int:user_id>/favourites/location/<int:location_id>", methods=["DELETE"])
 def delete_one_location(location_id, user_id):
     location = Favourites.query.filter_by(
