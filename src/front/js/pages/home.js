@@ -14,10 +14,12 @@ export const Home = () => {
 
 			<h1>Home Page</h1>
 
-			<div className="d-flex overflow-auto">
-				{store.favourites.map((favourite, index) => {
+			{/* <div className="d-flex overflow-auto"> */}
+			<div>
+				{store.favourites ? store.favourites.map((favourite, index) => {
 					return <Card key={index} favourites={favourite} />
-				})}
+				}) : <div className="d-flex "> <h5 className="mt-5 fw-light">Welcome, please login or register</h5>
+				</div>}
 			</div>
 
 		</div>

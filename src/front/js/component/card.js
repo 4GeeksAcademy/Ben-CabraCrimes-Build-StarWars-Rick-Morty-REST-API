@@ -10,7 +10,7 @@ export const Card = ({ favourites }) => {
             <div className="card-body">
                 <h5 className="card-title">User: {favourites.user_id}</h5>
                 <p className="card-text">Location: {favourites.location_id}</p>
-                <p className="card-text">Episode: {favourites.episode_id}</p>
+                <p className="card-text">People: {favourites.people_id}</p>
 
             </div>
         </div>

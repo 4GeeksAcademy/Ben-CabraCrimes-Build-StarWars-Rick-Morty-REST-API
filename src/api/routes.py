@@ -79,20 +79,20 @@ def add_people_favourites(people_id):
     return jsonify({"favourite": f"Person {people_id} added to favourites {people_id}"})
 
 
-# POST FAVOURITES
-@api.route("user/favorites/<int:user_id>", methods=["POST"])
-def add_favourites(user_id):
+# POST FAVOURITES @@@@@@@@@@@@@@@@@@@@@
+@api.route("/favorites/", methods=["POST"])
+def add_favourites():
     body = request.json
     favourite = Favourites(
         user_id=body["user_id"],
         people_id=body["people_id"],
         location_id=body["location_id"],
-        episode_id=body["epissode_id"],
+        episode_id=body["episode_id"],
     )
     db.session.add(favourite)
     db.session.commit()
     if favourite:
-        return jsonify({"favourite": "Favourite added"}), 200
+        return jsonify({"favourite": "Favourite added"}), 201
     return jsonify({"message": "error"}), 400
 
 
@@ -115,7 +115,6 @@ def add_location_favourites(location_id):
 # GET ALL USER FAVOURITE LOCATIONS
 @api.route("/favorites/location", methods=["GET"])
 def get_all_favourite_locations():
-    # location = Favourites.query.filter_by(location_id=1, user_id=1)
     location = Favourites.query.all()
     location_serialized = [location.serialize() for location in location]
     return jsonify({"Favourite location": location_serialized}), 200
@@ -137,8 +136,6 @@ def get_all_favourite_locations():
 def get_favourite():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
-    print(user)
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
     if user:
         favourites = Favourites.query.all()
         favourites_serialized = [favourite.serialize() for favourite in favourites]
