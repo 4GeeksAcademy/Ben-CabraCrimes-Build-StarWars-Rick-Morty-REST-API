@@ -4,6 +4,9 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User, People, Location, Favourites
 from api.utils import generate_sitemap, APIException
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 
 api = Blueprint("api", __name__)
 
@@ -76,6 +79,23 @@ def add_people_favourites(people_id):
     return jsonify({"favourite": f"Person {people_id} added to favourites {people_id}"})
 
 
+# POST FAVOURITES
+@api.route("user/favorites/<int:user_id>", methods=["POST"])
+def add_favourites(user_id):
+    body = request.json
+    favourite = Favourites(
+        user_id=body["user_id"],
+        people_id=body["people_id"],
+        location_id=body["location_id"],
+        episode_id=body["epissode_id"],
+    )
+    db.session.add(favourite)
+    db.session.commit()
+    if favourite:
+        return jsonify({"favourite": "Favourite added"}), 200
+    return jsonify({"message": "error"}), 400
+
+
 # CREATE/POST FAVOURITE LOCATION
 @api.route("<int:user_id>/favorites/location/<int:location_id>", methods=["POST"])
 def add_location_favourites(location_id):
@@ -102,37 +122,41 @@ def get_all_favourite_locations():
 
 
 # GET ALL THE FAVOURIRES
+# @api.route("/favourites", methods=["GET"])
+# def get_user_favourites():
+#     user_favourites = Favourites.query.all()
+#     user_favourites_serialized = [user.serialize() for user in user_favourites]
+#     if not user_favourites:
+#         return jsonify({"error": "No favourites found"}), 400
+#     return jsonify({"favourite": user_favourites_serialized}), 200
+
+
+# @@@@@@@ getAllFavourite @@@@@@@@@ Get the users favourites
 @api.route("/favourites", methods=["GET"])
-def get_user_favourites():
-    user_favourites = Favourites.query.all()
-    user_favourites_serialized = [user.serialize() for user in user_favourites]
-    if not user_favourites:
-        return jsonify({"error": "No favourites found"}), 400
-    return jsonify({"favourite": user_favourites_serialized}), 200
-
-
-# @@@@@@@ getAllFavouriteUserLocations
-@api.route("/user_1/favourites/location/", methods=["GET"])
-def get_a_favourite_location():
-    location_id = 1
-    location_favourites = Favourites.query.filter_by(location_id=location_id).all()
-    location_serialized = [location.serialize() for location in location_favourites]
-    if not location_favourites:
-        return jsonify({"error": "No location with this id found"}), 400
-    return jsonify({"location_favourite": location_serialized}), 200
+@jwt_required()
+def get_favourite():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    print(user)
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    if user:
+        favourites = Favourites.query.all()
+        favourites_serialized = [favourite.serialize() for favourite in favourites]
+        return jsonify({"favourites": favourites_serialized}), 200
+    return jsonify({"msg": "no token"}), 405
 
 
 # GET USER FAVOURITE PEOPLE
-@api.route("/favorites/people", methods=["GET"])
-def get_people_favourites():
-    user_id = 1
-    people_favourites = Favourites.query.filter_by(user_id=user_id).all()
-    people_favourites_serialized = [
-        people_favourite.serialize() for people_favourite in people_favourites
-    ]
-    if not people_favourites:
-        return jsonify({"error": "No favourites found"}), 400
-    return jsonify({"favourite_people": people_favourites_serialized}), 200
+# @api.route("/favorites/people", methods=["GET"])
+# def get_people_favourites():
+#     user_id = 1
+#     people_favourites = Favourites.query.filter_by(user_id=user_id).all()
+#     people_favourites_serialized = [
+#         people_favourite.serialize() for people_favourite in people_favourites
+#     ]
+#     if not people_favourites:
+#         return jsonify({"error": "No favourites found"}), 400
+#     return jsonify({"favourite_people": people_favourites_serialized}), 200
 
 
 # GET ONE USER
@@ -174,3 +198,25 @@ def delete_one_location(location_id, user_id):
     db.session.delete(location)
     db.session.commit()
     return jsonify({"location": "location deleted"}), 200
+
+
+@api.route("/user", methods=["POST"])
+def create_user():
+    body = request.json
+    email_already_exists = User.query.filter_by(email=body["email"]).first()
+    if email_already_exists:
+        return jsonify({"message": f"User already exists"}), 301
+    new_user = User(email=body["email"], password=body["password"], is_active=True)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"user": "created"}), 200
+
+
+@api.route("/login", methods=["POST"])
+def user_login():
+    body = request.json
+    user = User.query.filter_by(email=body["email"], password=body["password"]).first()
+    if user:
+        token = create_access_token(identity=user.id)
+        return jsonify({"token": token}), 200
+    return jsonify({"error": "no matching user"}), 200
